@@ -1,0 +1,6 @@
+langchain
+langgraph
+langchain-ollama
+langchain-text-splitters
+langchain-community
+bs4
