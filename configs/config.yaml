@@ -1,0 +1,69 @@
+# ============================================================
+# Industrial Fault Diagnosis System — Configuration
+# ============================================================
+
+paths:
+  raw_data: data/CWRU Bearing Dataset/raw
+  spectrograms: data/spectrograms
+  manual_pdf: data/rolling-bearing-handbook.pdf
+  manual_chunks: data/manual_chunks.json
+  fault_cases: data/fault_cases.json
+  chroma_db: data/chroma_db
+  cnn_model: models/cnn_bearing_fault.pth
+  feature_csv: data/CWRU Bearing Dataset/feature_time_48k_2048_load_1.csv
+  npz_data: data/CWRU Bearing Dataset/CWRU_48k_load_1_CNN_data.npz
+  bearing_images: data/bearing-images
+
+spectrogram:
+  sample_rate: 48000
+  segment_length: 2048
+  hop_length: 512
+  n_mels: 128
+  n_fft: 2048
+  image_size: 224  # pixels (square)
+
+model:
+  architecture: resnet18
+  num_classes: 10
+  pretrained: true
+  batch_size: 32
+  learning_rate: 0.001
+  epochs: 30
+  train_split: 0.70
+  val_split: 0.15
+  test_split: 0.15
+
+rag:
+  embedding_model: all-MiniLM-L6-v2
+  chunk_size: 500       # tokens
+  chunk_overlap: 50     # tokens
+  top_k: 5
+  llm_provider: openai  # openai | ollama
+  openai_model: gpt-3.5-turbo
+  ollama_model: llama3
+  temperature: 0.2
+
+fault_classes:
+  - Normal
+  - Ball_007
+  - Ball_014
+  - Ball_021
+  - IR_007
+  - IR_014
+  - IR_021
+  - OR_007
+  - OR_014
+  - OR_021
+
+# Mapping from .mat filename prefix to fault class
+mat_file_mapping:
+  Time_Normal: Normal
+  B007: Ball_007
+  B014: Ball_014
+  B021: Ball_021
+  IR007: IR_007
+  IR014: IR_014
+  IR021: IR_021
+  OR007: OR_007
+  OR014: OR_014
+  OR021: OR_021
