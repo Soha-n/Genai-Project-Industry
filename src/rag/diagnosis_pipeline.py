@@ -14,12 +14,24 @@ from pathlib import Path
 from PIL import Image
 from torchvision import transforms
 
-from src.models.cnn_classifier import BearingFaultCNN
-from src.rag.vector_store import get_retriever
-from src.rag.retrieval_chain import RetrievalChain, get_llm
+
+# Ensure project root is in sys.path for imports like 'models.*'
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from models.cnn_classifier import BearingFaultCNN
+from rag.vector_store import get_retriever
+from rag.retrieval_chain import RetrievalChain, get_llm
 
 
 def load_config(config_path="configs/config.yaml"):
+    from pathlib import Path
+    config_path = Path(config_path)
+    if not config_path.is_absolute():
+        # Always resolve relative to project root (parent of src)
+        project_root = Path(__file__).resolve().parent.parent.parent
+        config_path = project_root / config_path
     with open(config_path, "r") as f:
         return yaml.safe_load(f)
 

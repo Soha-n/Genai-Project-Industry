@@ -21,6 +21,11 @@ from src.models.cnn_classifier import BearingFaultCNN
 
 
 def load_config(config_path="configs/config.yaml"):
+    from pathlib import Path
+    config_path = Path(config_path)
+    if not config_path.is_absolute():
+        project_root = Path(__file__).resolve().parent.parent.parent
+        config_path = project_root / config_path
     with open(config_path, "r") as f:
         return yaml.safe_load(f)
 
@@ -84,6 +89,7 @@ def evaluate(model, loader, criterion, device):
 
 def run(config_path="configs/config.yaml"):
     cfg = load_config(config_path)
+    print("[DEBUG] cfg['paths']:", cfg["paths"])
     mcfg = cfg["model"]
     scfg = cfg["spectrogram"]
 

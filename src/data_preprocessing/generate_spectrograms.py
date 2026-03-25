@@ -19,6 +19,11 @@ from tqdm import tqdm
 
 
 def load_config(config_path="configs/config.yaml"):
+    from pathlib import Path
+    config_path = Path(config_path)
+    if not config_path.is_absolute():
+        project_root = Path(__file__).resolve().parent.parent.parent
+        config_path = project_root / config_path
     with open(config_path, "r") as f:
         return yaml.safe_load(f)
 
@@ -58,8 +63,20 @@ def generate_spectrogram_image(segment, sr, n_fft, hop_length, n_mels, image_siz
     plt.tight_layout(pad=0)
 
     fig.canvas.draw()
-    img = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
-    img = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+    # For matplotlib >=3.6 and Python >=3.12, use tostring_argb and convert to RGB
+    try:
+        img = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
+        img = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+    except AttributeError:
+        # Use ARGB and convert to RGB
+        argb = np.frombuffer(fig.canvas.tostring_argb(), dtype=np.uint8)
+        w, h = fig.canvas.get_width_height()
+        argb = argb.reshape((h, w, 4))
+        # Convert ARGB to RGB
+        img = np.zeros((h, w, 3), dtype=np.uint8)
+        img[..., 0] = argb[..., 1]  # R
+        img[..., 1] = argb[..., 2]  # G
+        img[..., 2] = argb[..., 3]  # B
     plt.close(fig)
 
     # Resize to exact target size
@@ -76,6 +93,7 @@ def save_spectrogram(img_array, save_path):
 
 def run(config_path="configs/config.yaml"):
     cfg = load_config(config_path)
+    print("[DEBUG] cfg['paths']:", cfg["paths"])
     raw_dir = Path(cfg["paths"]["raw_data"])
     out_dir = Path(cfg["paths"]["spectrograms"])
     spec_cfg = cfg["spectrogram"]

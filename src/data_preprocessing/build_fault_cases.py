@@ -9,6 +9,11 @@ from pathlib import Path
 
 
 def load_config(config_path="configs/config.yaml"):
+    from pathlib import Path
+    config_path = Path(config_path)
+    if not config_path.is_absolute():
+        project_root = Path(__file__).resolve().parent.parent.parent
+        config_path = project_root / config_path
     with open(config_path, "r") as f:
         return yaml.safe_load(f)
 
@@ -129,6 +134,7 @@ FAULT_CASES = [
 
 def run(config_path="configs/config.yaml"):
     cfg = load_config(config_path)
+    print("[DEBUG] cfg['paths']:", cfg["paths"])
     out_path = Path(cfg["paths"]["fault_cases"])
 
     out_path.parent.mkdir(parents=True, exist_ok=True)

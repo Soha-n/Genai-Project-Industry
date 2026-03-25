@@ -13,6 +13,11 @@ from sentence_transformers import SentenceTransformer
 
 
 def load_config(config_path="configs/config.yaml"):
+    from pathlib import Path
+    config_path = Path(config_path)
+    if not config_path.is_absolute():
+        project_root = Path(__file__).resolve().parent.parent.parent
+        config_path = project_root / config_path
     with open(config_path, "r") as f:
         return yaml.safe_load(f)
 
@@ -45,6 +50,7 @@ def build_fault_case_documents(fault_cases):
 
 def build_vector_store(config_path="configs/config.yaml"):
     cfg = load_config(config_path)
+    print("[DEBUG] cfg['paths']:", cfg["paths"])
     rag_cfg = cfg["rag"]
 
     manual_chunks_path = Path(cfg["paths"]["manual_chunks"])
@@ -68,10 +74,11 @@ def build_vector_store(config_path="configs/config.yaml"):
     client = chromadb.PersistentClient(path=str(chroma_dir))
 
     # Delete existing collections if they exist (for rebuilding)
+    from chromadb.errors import NotFoundError
     for name in ["manual_chunks", "fault_cases"]:
         try:
             client.delete_collection(name)
-        except ValueError:
+        except (ValueError, NotFoundError):
             pass
 
     # --- Manual chunks collection ---

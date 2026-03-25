@@ -12,6 +12,11 @@ load_dotenv()
 
 
 def load_config(config_path="configs/config.yaml"):
+    from pathlib import Path
+    config_path = Path(config_path)
+    if not config_path.is_absolute():
+        project_root = Path(__file__).resolve().parent.parent.parent
+        config_path = project_root / config_path
     with open(config_path, "r") as f:
         return yaml.safe_load(f)
 
@@ -52,6 +57,7 @@ Answer:"""
 def get_llm(config_path="configs/config.yaml"):
     """Initialize the LLM based on configuration."""
     cfg = load_config(config_path)
+    print("[DEBUG] cfg['paths']:", cfg["paths"])
     rag_cfg = cfg["rag"]
 
     provider = os.getenv("LLM_PROVIDER", rag_cfg["llm_provider"])

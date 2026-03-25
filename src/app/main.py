@@ -1,8 +1,14 @@
+
 """
 Industrial Fault Diagnosis System — Streamlit Application
 
 Run with:  streamlit run src/app/main.py
 """
+
+# Ensure src/ is in sys.path for imports like 'rag.*'
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import streamlit as st
 import yaml
@@ -12,7 +18,7 @@ import numpy as np
 from pathlib import Path
 from PIL import Image
 
-CONFIG_PATH = "configs/config.yaml"
+CONFIG_PATH = str((Path(__file__).resolve().parent.parent / "configs/config.yaml").resolve())
 
 
 @st.cache_data
@@ -35,7 +41,7 @@ def get_pipeline():
     """Lazy-load the diagnosis pipeline (cached in session state)."""
     if "pipeline" not in st.session_state:
         with st.spinner("Loading models and vector store..."):
-            from src.rag.diagnosis_pipeline import DiagnosisPipeline
+            from rag.diagnosis_pipeline import DiagnosisPipeline
             st.session_state.pipeline = DiagnosisPipeline(CONFIG_PATH)
     return st.session_state.pipeline
 
@@ -55,7 +61,7 @@ def page_diagnose():
             col1, col2 = st.columns([1, 2])
             with col1:
                 img = Image.open(uploaded)
-                st.image(img, caption="Uploaded Spectrogram", use_container_width=True)
+                st.image(img, caption="Uploaded Spectrogram", width="stretch")
 
             # Save to temp file
             import tempfile, os
@@ -130,7 +136,7 @@ def _show_classification(classification):
 
     # Top-3 bar chart
     top3_df = pd.DataFrame(classification["top3"])
-    st.bar_chart(top3_df.set_index("class")["confidence"])
+    st.bar_chart(top3_df.set_index("class")["confidence"], width="stretch")
 
 
 # ─────────────────────────────────────────────
@@ -230,10 +236,10 @@ def page_dashboard():
             df = pd.DataFrame(list(class_counts.items()), columns=["Fault Class", "Samples"])
             col1, col2 = st.columns(2)
             with col1:
-                st.dataframe(df, use_container_width=True)
+                st.dataframe(df, width="stretch")
                 st.metric("Total Spectrograms", sum(class_counts.values()))
             with col2:
-                st.bar_chart(df.set_index("Fault Class"))
+                st.bar_chart(df.set_index("Fault Class"), width="stretch")
         else:
             st.info("No spectrogram images found. Run the spectrogram generator first.")
     else:
@@ -245,7 +251,7 @@ def page_dashboard():
     if csv_path.exists():
         df = pd.read_csv(csv_path)
         st.write(f"Shape: {df.shape[0]} samples × {df.shape[1]} features")
-        st.dataframe(df.head(10), use_container_width=True)
+        st.dataframe(df.head(10), width="stretch")
 
         st.write("Class distribution:")
         st.bar_chart(df["fault"].value_counts())
