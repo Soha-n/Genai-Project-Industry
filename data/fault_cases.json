@@ -1,0 +1,112 @@
+[
+  {
+    "fault_type": "Normal",
+    "severity": "none",
+    "location": "N/A",
+    "defect_diameter_inches": 0,
+    "symptoms": "Smooth vibration pattern with low amplitude. No abnormal frequency peaks.",
+    "spectrogram_pattern": "Uniform low-energy spectrogram without prominent frequency bands or impulse patterns.",
+    "root_cause": "No fault present — bearing is operating within normal parameters.",
+    "recommended_action": "No action required. Continue routine monitoring per maintenance schedule.",
+    "similar_cases": "Any healthy bearing baseline measurement."
+  },
+  {
+    "fault_type": "Ball_007",
+    "severity": "minor",
+    "location": "Rolling element (ball)",
+    "defect_diameter_inches": 0.007,
+    "symptoms": "Slight increase in vibration amplitude. Faint high-frequency impulses in the signal.",
+    "spectrogram_pattern": "Weak periodic impulse bands in the spectrogram at ball spin frequency and harmonics.",
+    "root_cause": "Early-stage pitting or spalling on the rolling element surface, possibly from fatigue or contamination.",
+    "recommended_action": "Schedule inspection at next planned downtime. Increase monitoring frequency. Check lubricant condition.",
+    "similar_cases": "Ball_014 (same location, higher severity), other early-stage rolling element faults."
+  },
+  {
+    "fault_type": "Ball_014",
+    "severity": "moderate",
+    "location": "Rolling element (ball)",
+    "defect_diameter_inches": 0.014,
+    "symptoms": "Noticeable vibration increase. Clear impulsive patterns in signal. Audible noise possible.",
+    "spectrogram_pattern": "Distinct periodic impulse bands at ball spin frequency with visible harmonics and sidebands.",
+    "root_cause": "Progressive pitting/spalling on ball surface. Defect has grown from initial stage.",
+    "recommended_action": "Plan bearing replacement within next maintenance window. Monitor closely for rapid degradation.",
+    "similar_cases": "Ball_007 (earlier stage), Ball_021 (advanced stage)."
+  },
+  {
+    "fault_type": "Ball_021",
+    "severity": "severe",
+    "location": "Rolling element (ball)",
+    "defect_diameter_inches": 0.021,
+    "symptoms": "High vibration amplitude. Strong impulsive patterns. Elevated temperature possible. Audible noise.",
+    "spectrogram_pattern": "Strong broadband energy with prominent impulse patterns. Multiple harmonics of ball spin frequency clearly visible.",
+    "root_cause": "Advanced spalling/material loss on rolling element. Risk of secondary damage to races.",
+    "recommended_action": "Replace bearing immediately. Inspect races and cage for secondary damage. Analyze lubricant for debris.",
+    "similar_cases": "Ball_014 (previous stage), any severe rolling element fault in similar bearing types."
+  },
+  {
+    "fault_type": "IR_007",
+    "severity": "minor",
+    "location": "Inner race",
+    "defect_diameter_inches": 0.007,
+    "symptoms": "Slight vibration increase modulated at shaft speed. Low-level impulses at inner race defect frequency (BPFI).",
+    "spectrogram_pattern": "Faint impulse lines at BPFI with amplitude modulation at shaft rotation frequency.",
+    "root_cause": "Early-stage pitting on inner race surface, possibly from fatigue, misalignment, or inadequate lubrication.",
+    "recommended_action": "Schedule inspection. Check shaft alignment and lubrication. Increase monitoring frequency.",
+    "similar_cases": "IR_014 (same location, higher severity), other inner race faults in similar bearings."
+  },
+  {
+    "fault_type": "IR_014",
+    "severity": "moderate",
+    "location": "Inner race",
+    "defect_diameter_inches": 0.014,
+    "symptoms": "Clear vibration increase with amplitude modulation. Distinct impulses at BPFI and harmonics.",
+    "spectrogram_pattern": "Clear BPFI harmonics with shaft-speed modulation sidebands visible in the spectrogram.",
+    "root_cause": "Progressive inner race spalling. Defect growing due to continued operation.",
+    "recommended_action": "Plan replacement. Investigate root cause (misalignment, overload, contamination). Check adjacent components.",
+    "similar_cases": "IR_007 (earlier stage), IR_021 (advanced stage)."
+  },
+  {
+    "fault_type": "IR_021",
+    "severity": "severe",
+    "location": "Inner race",
+    "defect_diameter_inches": 0.021,
+    "symptoms": "High vibration with strong modulation. Broadband energy increase. Possible temperature rise.",
+    "spectrogram_pattern": "Strong BPFI harmonics with wide sidebands. Elevated broadband noise floor in spectrogram.",
+    "root_cause": "Advanced inner race damage with significant material loss. High risk of catastrophic failure.",
+    "recommended_action": "Immediate replacement required. Full inspection of shaft, housing, and adjacent bearings. Root cause analysis mandatory.",
+    "similar_cases": "IR_014 (previous stage), any severe inner race fault."
+  },
+  {
+    "fault_type": "OR_007",
+    "severity": "minor",
+    "location": "Outer race",
+    "defect_diameter_inches": 0.007,
+    "symptoms": "Low-level impulses at outer race defect frequency (BPFO). Vibration slightly elevated.",
+    "spectrogram_pattern": "Faint periodic impulse lines at BPFO. No significant amplitude modulation.",
+    "root_cause": "Early-stage pitting on outer race, commonly in the load zone. May be caused by static overload or contamination.",
+    "recommended_action": "Schedule inspection. Verify mounting and load conditions. Check for contamination ingress.",
+    "similar_cases": "OR_014 (same location, higher severity), other outer race faults."
+  },
+  {
+    "fault_type": "OR_014",
+    "severity": "moderate",
+    "location": "Outer race",
+    "defect_diameter_inches": 0.014,
+    "symptoms": "Clear impulses at BPFO with harmonics. Noticeable vibration increase during loaded operation.",
+    "spectrogram_pattern": "Distinct BPFO harmonics visible. Energy concentrated at characteristic outer race frequencies.",
+    "root_cause": "Progressive outer race spalling in load zone. Defect propagation from initial fault.",
+    "recommended_action": "Plan replacement. Inspect housing bore for damage. Check for proper fit and loading.",
+    "similar_cases": "OR_007 (earlier stage), OR_021 (advanced stage)."
+  },
+  {
+    "fault_type": "OR_021",
+    "severity": "severe",
+    "location": "Outer race",
+    "defect_diameter_inches": 0.021,
+    "symptoms": "High vibration amplitude. Strong impulsive signal at BPFO with many harmonics. Noise and heat.",
+    "spectrogram_pattern": "Strong broadband excitation with dominant BPFO pattern. Wide frequency spread indicating advanced damage.",
+    "root_cause": "Severe outer race damage with extensive spalling. Risk of cage failure and complete bearing seizure.",
+    "recommended_action": "Immediate replacement. Inspect housing, shaft, and seals. Full root cause analysis. Review maintenance schedule.",
+    "similar_cases": "OR_014 (previous stage), any severe outer race fault in similar applications."
+  }
+]
