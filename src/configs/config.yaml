@@ -38,8 +38,7 @@ rag:
   chunk_size: 500       # tokens
   chunk_overlap: 50     # tokens
   top_k: 5
-  llm_provider: openai  # openai | ollama
-  openai_model: gpt-3.5-turbo
+  llm_provider: ollama
   ollama_model: llama3
   temperature: 0.2
 

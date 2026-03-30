@@ -55,27 +55,87 @@ Answer:"""
 
 
 def get_llm(config_path="configs/config.yaml"):
-    """Initialize the LLM based on configuration."""
+    """Initialize the LLM — simplified to use Ollama only."""
     cfg = load_config(config_path)
-    print("[DEBUG] cfg['paths']:", cfg["paths"])
-    rag_cfg = cfg["rag"]
+    rag_cfg = cfg.get("rag", {})
 
-    provider = os.getenv("LLM_PROVIDER", rag_cfg["llm_provider"])
+    from langchain_community.llms import Ollama
 
-    if provider == "openai":
-        from langchain_openai import ChatOpenAI
-        return ChatOpenAI(
-            model=rag_cfg["openai_model"],
-            temperature=rag_cfg["temperature"],
-        )
-    elif provider == "ollama":
-        from langchain_community.llms import Ollama
-        return Ollama(
-            model=os.getenv("OLLAMA_MODEL", rag_cfg["ollama_model"]),
-            temperature=rag_cfg["temperature"],
-        )
-    else:
-        raise ValueError(f"Unknown LLM provider: {provider}")
+    model = os.getenv("OLLAMA_MODEL", rag_cfg.get("ollama_model", "llama3.2:3b"))
+    temperature = rag_cfg.get("temperature", 0.2)
+    # Basic availability check: prefer the `ollama` CLI, but fall back to the
+    # Python `ollama` client if available. Match model names using substring
+    # membership to tolerate slight version differences (e.g. 'llama3.1').
+    available_models = None
+    model_candidates = []
+    try:
+        import subprocess
+
+        proc = subprocess.run(["ollama", "ls"], capture_output=True, text=True, timeout=5)
+        stdout = (proc.stdout or "") + "\n" + (proc.stderr or "")
+        if proc.returncode == 0:
+            # Collect lines and parse model names (first column is NAME).
+            raw_lines = [ln.strip() for ln in stdout.splitlines() if ln.strip()]
+            cli_model_names = [ln.split()[0] for ln in raw_lines if ln.split()]
+            model_candidates.extend(cli_model_names)
+            available_models = "\n".join(cli_model_names)
+            # don't fail yet; we'll try python client and also allow substring matching
+        else:
+            raise RuntimeError("ollama-cli-failed")
+    except FileNotFoundError:
+        # CLI not installed; we'll try the Python client next
+        available_models = None
+    except subprocess.SubprocessError:
+        available_models = None
+    except RuntimeError as e:
+        if str(e) != "model-not-found-via-cli":
+            available_models = None
+
+    # If CLI didn't locate the model, try the Python `ollama` client (if installed)
+    if available_models is None or (available_models is not None and model not in available_models):
+        try:
+            from ollama import Client
+
+            client = Client()
+            # Try a couple of possible attribute names used by different client versions
+            models_list = None
+            if hasattr(client, "list_models"):
+                models_list = client.list_models()
+            elif hasattr(client, "models"):
+                models_list = client.models()
+            elif hasattr(client, "get_models"):
+                models_list = client.get_models()
+
+            if models_list is not None:
+                # Normalize to strings and join for reporting
+                try:
+                    model_names = [m["name"] if isinstance(m, dict) and "name" in m else str(m) for m in models_list]
+                except Exception:
+                    model_names = [str(m) for m in models_list]
+                model_candidates.extend(model_names)
+                available_models = "\n".join(model_candidates)
+        except Exception:
+            # If this fails, available_models may still be None or from the CLI attempt
+            pass
+
+    # If we have candidates, try to pick the best match (substring). If the
+    # requested model is a prefix like 'llama3' and we have 'llama3.2:3b', choose that.
+    if model_candidates:
+        chosen = None
+        for cand in model_candidates:
+            if model == cand or model in cand:
+                chosen = cand
+                break
+        if chosen:
+            model = chosen
+            available_models = "\n".join(model_candidates)
+        else:
+            avail_msg = f"\nAvailable models:\n{available_models}" if available_models else ""
+            raise RuntimeError(
+                f"Ollama model '{model}' not found locally. Pull it with `ollama pull {model}` or set `OLLAMA_MODEL` to a model you have installed.{avail_msg}"
+            )
+
+    return Ollama(model=model, temperature=temperature)
 
 
 class RetrievalChain:
@@ -114,7 +174,21 @@ class RetrievalChain:
         results = self.retriever.retrieve(enriched_query)
         context = self._format_context(results)
         prompt = DIAGNOSIS_PROMPT_TEMPLATE.format(context=context, question=enriched_query)
-        response = self.llm.invoke(prompt)
+        try:
+            response = self.llm.invoke(prompt)
+        except Exception as e:
+            # If Ollama returns a 404 (model not found), raise a clear error telling the user
+            try:
+                from langchain_community.llms.ollama import OllamaEndpointNotFoundError
+            except Exception:
+                OllamaEndpointNotFoundError = None
+
+            if OllamaEndpointNotFoundError is not None and isinstance(e, OllamaEndpointNotFoundError):
+                raise RuntimeError(
+                    "Ollama model not found (404). Pull the model locally with `ollama pull <model>` "
+                    "or set the `OLLAMA_MODEL` environment variable to a model you have available."
+                ) from e
+            raise
 
         # Handle both string and AIMessage responses
         answer = response.content if hasattr(response, "content") else str(response)
@@ -130,7 +204,20 @@ class RetrievalChain:
         results = self.retriever.retrieve(question, source_type="manual")
         context = self._format_context(results)
         prompt = QA_PROMPT_TEMPLATE.format(context=context, question=question)
-        response = self.llm.invoke(prompt)
+        try:
+            response = self.llm.invoke(prompt)
+        except Exception as e:
+            try:
+                from langchain_community.llms.ollama import OllamaEndpointNotFoundError
+            except Exception:
+                OllamaEndpointNotFoundError = None
+
+            if OllamaEndpointNotFoundError is not None and isinstance(e, OllamaEndpointNotFoundError):
+                raise RuntimeError(
+                    "Ollama model not found (404). Pull the model locally with `ollama pull <model>` "
+                    "or set the `OLLAMA_MODEL` environment variable to a model you have available."
+                ) from e
+            raise
 
         answer = response.content if hasattr(response, "content") else str(response)
 

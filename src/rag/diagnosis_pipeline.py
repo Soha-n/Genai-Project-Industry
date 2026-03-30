@@ -40,6 +40,7 @@ class DiagnosisPipeline:
     """End-to-end bearing fault diagnosis pipeline."""
 
     def __init__(self, config_path="configs/config.yaml"):
+        self.config_path = config_path
         self.cfg = load_config(config_path)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self._load_cnn()
@@ -72,8 +73,8 @@ class DiagnosisPipeline:
 
     def _load_rag(self):
         """Initialize the RAG retrieval chain."""
-        retriever = get_retriever(self.cfg)
-        llm = get_llm(self.cfg)
+        retriever = get_retriever(self.config_path)
+        llm = get_llm(self.config_path)
         self.chain = RetrievalChain(retriever, llm)
 
     def classify_image(self, image_path):
@@ -121,7 +122,7 @@ class DiagnosisPipeline:
 
     def diagnose_from_signal(self, mat_file_path, user_query=None):
         """Diagnose from a raw .mat file: generate spectrogram → classify → RAG."""
-        from src.data_preprocessing.generate_spectrograms import (
+        from data_preprocessing.generate_spectrograms import (
             extract_de_signal,
             generate_spectrogram_image,
             save_spectrogram,

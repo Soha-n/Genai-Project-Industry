@@ -74,7 +74,7 @@ pip install -r requirements.txt
 
 ```bash
 cp .env.example .env
-# Edit .env and add your OpenAI API key (or configure Ollama for local LLM)
+# Configure Ollama for local LLM (set `OLLAMA_MODEL` in .env)
 ```
 
 ### 3. Data Preprocessing
@@ -138,7 +138,7 @@ streamlit run src/app/main.py
 - **Deep Learning**: PyTorch (ResNet-18 transfer learning)
 - **Vector Database**: ChromaDB
 - **Embeddings**: sentence-transformers (all-MiniLM-L6-v2)
-- **LLM**: OpenAI GPT-3.5/4 or Ollama (local)
+- **LLM**: Ollama (local)
 - **RAG Framework**: LangChain
 - **Signal Processing**: librosa, scipy
 - **UI**: Streamlit

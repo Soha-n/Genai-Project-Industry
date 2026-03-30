@@ -145,36 +145,68 @@ def _show_classification(classification):
 def page_knowledge_base():
     st.header("📚 Bearing Knowledge Base")
     st.write("Ask questions about rolling bearings using the maintenance handbook.")
-
-    # Chat history
+    # Initialize chat state
     if "chat_history" not in st.session_state:
-        st.session_state.chat_history = []
+        # seed a friendly system prompt
+        st.session_state.chat_history = [
+            {"role": "assistant", "content": "Hi — I can help you explore the bearing handbook. Ask me a question and I will search the manual."}
+        ]
+
+    # Controls: clear chat
+    cols = st.columns([1, 3, 1])
+    with cols[0]:
+        if st.button("Clear chat"):
+            st.session_state.chat_history = [{"role": "assistant", "content": "Hi — I can help you explore the bearing handbook. Ask me a question and I will search the manual."}]
 
     # Display chat history
-    for msg in st.session_state.chat_history:
+    for i, msg in enumerate(st.session_state.chat_history):
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
+        # Show sources stored on the message (if present)
+        if msg.get("sources"):
+            with st.expander("Sources"):
+                for doc in msg["sources"]:
+                    page = doc["metadata"].get("page", "?")
+                    st.caption(f"Page {page} — distance: {doc.get('distance', 0):.4f}")
+                    st.text(doc["text"][:400])
 
-    # Chat input
+    # Chat input (conversational): include recent conversation as context
     question = st.chat_input("Ask about bearings...")
     if question:
+        # Append user message to history immediately for UI
         st.session_state.chat_history.append({"role": "user", "content": question})
         with st.chat_message("user"):
             st.markdown(question)
 
+        # Build a short conversational context (last 6 messages)
+        recent = st.session_state.chat_history[-6:]
+        convo_lines = []
+        for m in recent:
+            prefix = "User" if m["role"] == "user" else "Assistant"
+            convo_lines.append(f"{prefix}: {m['content']}")
+        convo_context = "\n".join(convo_lines)
+
         pipeline = get_pipeline()
         with st.chat_message("assistant"):
-            with st.spinner("Searching handbook..."):
-                result = pipeline.ask_manual(question)
+            with st.spinner("Searching handbook and composing reply..."):
+                # Send the conversational context to RAG so retrieved context is aware of prior Q/A
+                result = pipeline.ask_manual(convo_context)
+            # Post the assistant answer
             st.markdown(result["answer"])
 
+            # Add sources to this assistant message in history for display
             with st.expander("Sources"):
                 for doc in result["retrieved_docs"]:
                     page = doc["metadata"].get("page", "?")
                     st.caption(f"Page {page} — distance: {doc['distance']:.4f}")
-                    st.text(doc["text"][:300])
+                    st.text(doc["text"][:400])
 
-        st.session_state.chat_history.append({"role": "assistant", "content": result["answer"]})
+        # Store assistant reply and sources in history for future context
+        st.session_state.chat_history.append({
+            "role": "assistant",
+            "content": result["answer"],
+            "sources": result.get("retrieved_docs", []),
+        })
 
 
 # ─────────────────────────────────────────────
